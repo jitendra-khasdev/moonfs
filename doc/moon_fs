@@ -1,0 +1,38 @@
+moonfs @ Nov-2016
+=================
+moonfs is file system inspired by ext2. Originally developing for learning
+purpose.
+
+
+TODO:
+=====
+
+1. Figure out all data structures and get concreate understanding of fs.
+2. Define the scope of functionality that you will need to support.
+3. Design the complete flow of fs.
+
+Layout of moon_fs
+=================
+
+v0.1
+
+1. superblock
+2. block bitmap
+3. inode bitmap
+4. inode table
+5. blocks
+
+ +-------+---------+--------+----------+--------+--------+------+---------+
+ |       |         |        |          |        |        |      |         |
+ | super |  block  | inode  |  inode   |  block | block  |block |  . . .  |
+ | block |  bitmap | bitmap |  table   |    0   |   1    |  2   |         |
+ +-------+---------+--------+----------+--------+--------+------+---------+
+
+Block Size : 4K
+
+File Structure:
+
+1. super.c : Registering a filesytem and operation for super block
+2. namei.c : Unix file operation
+3. inode.c
+4. file.c
