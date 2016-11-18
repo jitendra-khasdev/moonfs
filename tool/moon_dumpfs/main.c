@@ -55,7 +55,7 @@ struct ext2_super_block {
 
 int main(int argc, char *argv[])
 {
-	int fd;
+	int fd, i;
 	struct ext2_super_block super_block;
 
 	if (argc != 2) {
@@ -69,6 +69,14 @@ int main(int argc, char *argv[])
 
 	read(fd, &super_block, sizeof(struct ext2_super_block));
 
+	printf("Magic Number == 0x%X%X\n", (unsigned int)super_block.s_magic[1], (unsigned int)super_block.s_magic[0]);
+
+	printf("UUID == ");
+	for (i = 0; i < 16; i++) {
+		printf("%x", (unsigned int)super_block.s_uuid[i]);
+	}
+
+	printf("\n");
 	printf("Super_block_count == %d \n", super_block.s_blocks_count);
 	printf("Super_r_blocks_count == %d \n", super_block.s_r_blocks_count);
 	printf("Super_free_blocks_count == %d \n", super_block.s_free_blocks_count);
