@@ -1,0 +1,12 @@
+Reading block from the file
+===========================
+
+Arguments: inode
+
+Steps:
+
+1. Get inode pointer for the file.
+2. Get the in-memory inode
+3. Derefernce data array field to get a single block
+4. copy this block into buffer array
+5. send it to user
