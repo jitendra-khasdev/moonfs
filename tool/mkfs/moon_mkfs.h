@@ -3,7 +3,7 @@
 #define BOOT_BLOCK 1024
 
 struct super_block {
-	char *name;
+	char name[10];
 	int size;
 	int block_count;
 };

@@ -65,7 +65,7 @@ int make_sb(int fd)
 
 	sb = (struct super_block *)malloc(sizeof(struct super_block));
 
-	sb->name = "moonfs";
+	strcpy(sb->name, "moonfs");
 	sb->size = 234;
 	sb->block_count = 345;
 
