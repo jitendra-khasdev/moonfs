@@ -1,0 +1,18 @@
+Moonfs Layout
+=============
+[Boot Block][Super Block][Block Bitmap][Inode Bitmap][Inode Table][Data Block]
+
+moon_mkfs: It is create filesytem on disk as specified into above layout.
+
+Steps:
+
+1. Check error conditions for disk on which filesystem to be created.
+2. Create Boot block of 1024 Byte.
+3. Now, Calculate total number blocks for rest of space (Assume 1 Block = 4096). 
+4. Create a super block.
+5. Create a block bitmap of one 1 block.
+6. Create a Inode Bitmap of one 1 block.
+7. Calculate inode number of table block.
+8. Create inode Table block according to indoe table block no.
+9. Create Data Blocks of rest block.
+
