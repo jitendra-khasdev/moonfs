@@ -1,0 +1,7 @@
+Remove gaint file from the local commit which is restrict to be psuhed
+Error : "this exceeds GitHub's file size limit of 100."
+
+git rm --cached name_of_a_giant_file
+git rm --cached name_of_another_giant_file
+git commit --amend CHEAD
+git push

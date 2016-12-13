@@ -164,7 +164,14 @@ static int moon_init(void)
 
 static void moon_exit(void)
 {
-	printk("Unregister moon file system\n");
+	int err;
+
+	err  = unregister_filesystem(&moonfs_type);
+
+	if (err != 0) {
+		printk("Error in unregistring fs\n");
+	} else
+		printk("Unregister moon file system\n");
 }
 
 module_init(moon_init);
