@@ -1,9 +1,11 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/fs.h>
+#include <linux/buffer_head.h>
+#include <linux/slab.h>
 #include "moonfs.h"
 
-
+#define MOONFS_MAGIC     0x73616d70 /* "SAMP" */
 /*
  * In the mount basically we read disk data structure and fill the
  * in-memory data structure.
@@ -12,59 +14,127 @@
  * filing hardcoded values.
  */
 
-static struct super_operations moomfs_super_ops = {
+static void moon_put_super(struct super_block *sb)                          
+{                                                                               
+	struct moon_sb_info *sfs_sb;                                        
+
+	sfs_sb = SFS_SB(sb);                                                    
+
+	if (sfs_sb == NULL) {                                                   
+		/* Empty superblock info
+		 * passed to unmount */                   
+		return;                                                         
+	}                                                                       
+
+	/* FS-FILLIN your fs specific umount
+	 * logic here */                      
+	kfree(sfs_sb);                                                          
+	sb->s_fs_info = NULL;                                                   
+} 
 
 
 
-};
-
-static struct file_operations moonfs_fops = {
-
-
-};
-
-
-static struct inode_operations moonfs_iops = {
-
-
-};
 
 static struct super_operations moonfs_super_ops = {
-
+	.statfs		= simple_statfs,
+	.drop_inode	= generic_delete_inode,
+	.put_super      = moon_put_super,
 };
+
+struct inode *moon_get_inode(struct super_block *sb, const struct inode *dir, 
+			      int mode, dev_t dev)
+{
+	
+	struct inode *inode = new_inode(sb);
+	
+	if (inode) {
+		inode->i_ino = get_next_ino();
+		inode_init_owner(inode, dir, mode);
+		inode->i_blocks = 0;
+		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+		switch (mode & S_IFMT) {
+			default:
+				init_special_inode(inode, mode, dev);
+				break;
+			case S_IFREG:
+				printk("File inode \n");
+				inode->i_op = &simple_dir_inode_operations;
+				break;
+
+			case S_IFDIR:
+				printk("Dir inode\n");
+				inode->i_op = &simple_dir_inode_operations;
+				inode_inc_link_count(inode);
+				break;
+		}
+	}
+	return inode;
+}
+
 
 
 int moonfs_fill_super (struct super_block *sb, void *data, int temp)
 {
-	struct moonfs_sb_info *mn_sb;
-	struct inode *moon_inode;
+	struct moon_sb_info *msbi;
+	struct inode *root;	
+	struct moon_super_block *msb;
+	unsigned int err;
+	struct buffer_head *bh = NULL;
 
-	sb->s_maxbytes = MAX_LFS_FILESIZE;
+	err = -ENOMEM;
+	msbi = kzalloc(sizeof(struct moon_sb_info), GFP_KERNEL);
+	if (!msbi) {
+		kfree(msbi);
+		goto fail;
+	}
+
+	sb->s_fs_info = msbi;
+
+	bh = sb_bread(sb, 1024);
+	if (!bh) {
+		brelse(bh);
+		printk("Unable to read superblock");
+		goto fail;
+	}
+
+	msb = (struct moon_super_block *)(char *)bh->b_data;
+	
+	if (msb) {
+		printk("Disk Super Block\n");
+		printk("name == %s\n", msb->name);
+	}
+
+	sb->s_maxbytes = MAX_LFS_FILESIZE; /* NB: may be too large for mem */
 	sb->s_blocksize = PAGE_SIZE;
 	sb->s_blocksize_bits = PAGE_SHIFT;
-	sb->s_magic = 0xABC;
-	sb->s_time_gran = 1;
+	sb->s_magic = MOONFS_MAGIC;
 	sb->s_op = &moonfs_super_ops;
+	sb->s_time_gran = 1; /* 1 nanosecond time granularity */
 
-	moon_inode = new_inode(sb);
-	moon_inode->i_atime = moon_inode->i_mtime = moon_inode->i_ctime = CURRENT_TIME;
-	inode_init_owner(moon_inode, S_IFDIR | 0755, 0);
-	moon_inode->i_ino = get_next_ino();
-	moon_inode->i_blocks = 0;
-
-	moon_inode->i_op = &moonfs_iops;
-	moon_inode->i_fop = &moonfs_fops;
-
-	printk(KERN_INFO "Valid super read complete\n");
-
+	root = moon_get_inode(sb, NULL, S_IFDIR | 0755, 0);
+	if (!root)
+		goto fail;
+	
+	sb->s_root = d_make_root(root);
+	if (!sb->s_root) {
+		iput(root);
+		printk("Unable to read root inode\n");
+		goto fail;
+	}
+	printk("Mount function getting called\n");	
+	
 	return 0;
+
+fail:
+	return err;
 }
 
 
-static struct dentry *moonfs_mount (struct file_system_type *fs_type, int flags, const char *dev_name, void *data)
+static struct dentry *moonfs_mount(struct file_system_type *fs_type,
+	int flags, const char *dev_name, void *data)
 {
-	printk(KERN_INFO "Mount sys call is called\n");
-	return mount_nodev(fs_type, flags, data, moonfs_fill_super);
+	return mount_bdev(fs_type, flags, dev_name, data, moonfs_fill_super);
+
 }
 
 static void moonfs_kill_sb (struct super_block *sb)
