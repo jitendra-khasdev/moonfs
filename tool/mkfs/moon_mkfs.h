@@ -1,6 +1,6 @@
 
 #define BLOCK_SIZE 4096
-#define BOOT_BLOCK 1024
+#define BOOT_BLOCK 4096
 
 struct super_block {
 	char name[10];
