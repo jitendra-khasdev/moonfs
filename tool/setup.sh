@@ -1,12 +1,40 @@
-#!/bin/bash
+#/bin/bash
 
+FS_DIR=/home/jittu/moonfs
+SRC_DIR=$FS_DIR/src
+MKFS_DIR=$FS_DIR/tool/mkfs
+LOOP_DEV=`losetup -f`
 
-F_LOOP=`losetup -f`
+function install_fs()
+{
+	cd $SRC_DIR
+	make all
+	insmod moonfs.ko
+}
 
-echo "Setting up loop back device as $F_LOOP"
+function setup_disk()
+{
+	cd $MKFS_DIR
+	make all
+	losetup $LOOP_DEV disk_mn_fs
+	mount -t moonfs $LOOP_DEV mnt
+}
 
-losetup $F_LOOP disk_mn_fs
+function remove_disk()
+{
+	cd $MKFS_DIR
+	umount mnt
+	losetup -d /dev/loop0
+	make clean
+}
 
-mount -t moonfs $F_LOOP mnt
+function uninstall_fs()
+{
+	cd $SRC_DIR
+	rmmod moonfs
+	make clean
+}
 
-echo "loop back device properly mounted"
+#install_fs
+#setup_disk
+remove_disk
