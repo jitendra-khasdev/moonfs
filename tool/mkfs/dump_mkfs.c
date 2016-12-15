@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	struct super_block sb;
 
 	if (argc != 2) {
-		printf("Arguments Missing!");
+		printf("Arguments Missing!\n");
 		return -1;
 	}
 
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
 	bytes = read(fd, &sb, sizeof(sb));
 
-	printf("Super Block Info");
+	printf("Super Block Info\n");
 	printf("Name == %s\n", sb.name);
 	printf("Name == %d\n", sb.size);
 	printf("Name == %d\n", sb.block_count);
