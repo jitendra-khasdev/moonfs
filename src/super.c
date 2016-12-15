@@ -90,14 +90,14 @@ int moonfs_fill_super (struct super_block *sb, void *data, int temp)
 
 	sb->s_fs_info = msbi;
 
-	bh = sb_bread(sb, 1024);
+	bh = sb_bread(sb, 1);
 	if (!bh) {
 		brelse(bh);
 		printk("Unable to read superblock");
 		goto fail;
 	}
 
-	msb = (struct moon_super_block *)(char *)bh->b_data;
+	msb = (struct moon_super_block *)((char *)bh->b_data);
 	
 	if (msb) {
 		printk("Disk Super Block\n");
