@@ -6,13 +6,11 @@
 #include "moonfs.h"
 
 #define MOONFS_MAGIC     0x73616d70 /* "SAMP" */
-/*
- * In the mount basically we read disk data structure and fill the
- * in-memory data structure.
- *
- * In current we do not have any disk data structure, we are here
- * filing hardcoded values.
- */
+
+extern struct inode_operations moon_file_inode_ops;
+extern struct inode_operations moon_dir_inode_ops;
+extern struct address_space_operations moon_add_ops;
+extern struct file_operations moon_file_operations;
 
 static void moon_put_super(struct super_block *sb)                          
 {                                                                               
@@ -52,20 +50,30 @@ struct inode *moon_get_inode(struct super_block *sb, const struct inode *dir,
 		inode_init_owner(inode, dir, mode);
 		inode->i_blocks = 0;
 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+		inode->i_mapping->a_ops = &moon_add_ops;
+		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
+		mapping_set_unevictable(inode->i_mapping);
+
 		switch (mode & S_IFMT) {
 			default:
 				init_special_inode(inode, mode, dev);
 				break;
 			case S_IFREG:
 				printk("File inode \n");
-				inode->i_op = &simple_dir_inode_operations;
+				inode->i_op = &moon_file_inode_ops;
+				inode->i_fop = &moon_file_operations;
 				break;
 
 			case S_IFDIR:
 				printk("Dir inode\n");
-				inode->i_op = &simple_dir_inode_operations;
+				inode->i_op = &moon_dir_inode_ops;
+				inode->i_fop = &simple_dir_operations;
 				inode_inc_link_count(inode);
 				break;
+			case S_IFLNK:
+				printk("Symlink indoe \n");
+				inode->i_op = &page_symlink_inode_operations;
+
 		}
 	}
 	return inode;
