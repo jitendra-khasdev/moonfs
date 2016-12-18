@@ -70,6 +70,10 @@ struct inode *moon_get_inode(struct super_block *sb, const struct inode *dir,
 				inode->i_fop = &simple_dir_operations;
 				inode_inc_link_count(inode);
 				break;
+			case S_IFLNK:
+				printk("Symlink indoe \n");
+				inode->i_op = &page_symlink_inode_operations;
+
 		}
 	}
 	return inode;
