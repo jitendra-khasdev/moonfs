@@ -30,9 +30,6 @@ static void moon_put_super(struct super_block *sb)
 	sb->s_fs_info = NULL;                                                   
 } 
 
-
-
-
 static struct super_operations moonfs_super_ops = {
 	.statfs		= simple_statfs,
 	.drop_inode	= generic_delete_inode,
@@ -78,8 +75,6 @@ struct inode *moon_get_inode(struct super_block *sb, const struct inode *dir,
 	}
 	return inode;
 }
-
-
 
 int moonfs_fill_super (struct super_block *sb, void *data, int temp)
 {
@@ -137,7 +132,6 @@ fail:
 	return err;
 }
 
-
 static struct dentry *moonfs_mount(struct file_system_type *fs_type,
 	int flags, const char *dev_name, void *data)
 {
@@ -156,7 +150,6 @@ static struct file_system_type moonfs_type = {
 	.mount = moonfs_mount,
 	.kill_sb = moonfs_kill_sb,
 };
-
 
 static int moon_init(void)
 {

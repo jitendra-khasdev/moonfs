@@ -8,3 +8,5 @@
 *.tmp_versions
 disk_mn_fs
 mkfs
+cscope.out
+tags
